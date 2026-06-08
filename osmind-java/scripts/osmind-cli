@@ -4,8 +4,6 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$ROOT"
 
-if [ ! -f core-java/sentinel-cli/target/sentinel-cli-0.1.0-SNAPSHOT.jar ]; then
-  mvn -q package
-fi
+mvn -q package
 
 exec sh scripts/sentinel "$@"

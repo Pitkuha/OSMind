@@ -47,7 +47,13 @@ public final class SentinelService {
     }
 
     public String ask(String question, Duration lookback) {
-        return explainer.explain(new ExplanationRequest(question, lookback, anomalies(lookback)));
+        List<ProcessBehaviorProfile> currentProfiles = profiles(lookback);
+        return explainer.explain(new ExplanationRequest(
+                question,
+                lookback,
+                anomalyDetector.detect(currentProfiles),
+                currentProfiles
+        ));
     }
 
     public SentinelMonitor createMonitor(Duration lookback, Duration interval) {

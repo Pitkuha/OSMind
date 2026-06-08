@@ -11,14 +11,7 @@ public final class TemplateExplainer implements Explainer {
     @Override
     public String explain(ExplanationRequest request) {
         if (request.anomalies().isEmpty()) {
-            return """
-                    Question: %s
-
-                    Short answer: I do not see a clear anomaly in the selected time window.
-
-                    Explanation: This does not prove the system is completely clean, but the collected events do not show mass file mutation, dropper behavior, or unusual network fan-out.
-                    AI mode: local heuristic analyzer plus explanation module. A local LLM backend is planned for the next layer.
-                    """.formatted(questionOrFallback(request)).trim();
+            return noAnomalyAnswer(request);
         }
 
         Anomaly top = selectAnomaly(request);
@@ -51,6 +44,48 @@ public final class TemplateExplainer implements Explainer {
                 humanize(top),
                 top.recommendation()
         ).trim();
+    }
+
+    private String noAnomalyAnswer(ExplanationRequest request) {
+        String shortAnswer = noAnomalyShortAnswer(request);
+        String context = request.profiles().isEmpty()
+                ? "I did not have any process profiles to evaluate in this time window. Use Collect Live Snapshot, start the native collector, or load demo data first."
+                : "I evaluated " + request.profiles().size() + " observed process profile(s) in this time window.";
+
+        return """
+                Question: %s
+
+                Short answer: %s
+
+                Evidence:
+                - lookback window: last %d minutes
+                - observed profiles: %d
+                - detected anomalies: 0
+
+                Explanation: %s This does not prove the system is completely clean; it only means the collected events do not cross the current anomaly thresholds.
+                Recommendation: If you expected live data, click Collect Live Snapshot or start the macOS collector, then ask again.
+                AI mode: local heuristic analyzer plus explanation module. A local LLM backend is planned for the next layer.
+                """.formatted(
+                questionOrFallback(request),
+                shortAnswer,
+                request.lookback().toMinutes(),
+                request.profiles().size(),
+                context
+        ).trim();
+    }
+
+    private String noAnomalyShortAnswer(ExplanationRequest request) {
+        String question = request.userQuestion() == null ? "" : request.userQuestion().toLowerCase(Locale.ROOT);
+        if (question.contains("сеть") || question.contains("сетев") || question.contains("traffic") || question.contains("network") || question.contains("tcp")) {
+            return "I do not see a network spike in the collected events.";
+        }
+        if (question.contains("файл") || question.contains("шифр") || question.contains("ransom") || question.contains("file")) {
+            return "I do not see suspicious file mutation or ransomware-like behavior in the collected events.";
+        }
+        if (question.contains("процесс") || question.contains("process") || question.contains("cpu") || question.contains("memory")) {
+            return "I do not see a process anomaly in the collected events.";
+        }
+        return "I do not see a clear anomaly related to this question in the selected time window.";
     }
 
     private String questionOrFallback(ExplanationRequest request) {
