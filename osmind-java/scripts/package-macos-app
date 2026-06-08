@@ -1,0 +1,31 @@
+#!/usr/bin/env sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$ROOT"
+
+mvn -q package
+
+if ! command -v jpackage >/dev/null 2>&1; then
+  printf 'jpackage was not found. Install a JDK that includes jpackage to build a .app bundle.\n' >&2
+  exit 1
+fi
+
+mkdir -p dist/lib
+cp core-java/sentinel-ui/target/sentinel-ui-0.1.0-SNAPSHOT.jar dist/
+cp core-java/api/target/api-0.1.0-SNAPSHOT.jar dist/lib/
+cp core-java/event-schema/target/event-schema-0.1.0-SNAPSHOT.jar dist/lib/
+cp core-java/storage/target/storage-0.1.0-SNAPSHOT.jar dist/lib/
+cp core-java/behavior-engine/target/behavior-engine-0.1.0-SNAPSHOT.jar dist/lib/
+cp core-java/anomaly-detector/target/anomaly-detector-0.1.0-SNAPSHOT.jar dist/lib/
+cp core-java/llm-explainer/target/llm-explainer-0.1.0-SNAPSHOT.jar dist/lib/
+
+jpackage \
+  --type app-image \
+  --name OSMind \
+  --input dist \
+  --main-jar sentinel-ui-0.1.0-SNAPSHOT.jar \
+  --main-class dev.osmind.ui.SentinelUi \
+  --dest dist
+
+printf 'Created app image under dist/OSMind.app\n'

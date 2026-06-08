@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+CP="$ROOT/core-java/sentinel-cli/target/sentinel-cli-0.1.0-SNAPSHOT.jar:$ROOT/core-java/api/target/api-0.1.0-SNAPSHOT.jar:$ROOT/core-java/event-schema/target/event-schema-0.1.0-SNAPSHOT.jar:$ROOT/core-java/storage/target/storage-0.1.0-SNAPSHOT.jar:$ROOT/core-java/behavior-engine/target/behavior-engine-0.1.0-SNAPSHOT.jar:$ROOT/core-java/anomaly-detector/target/anomaly-detector-0.1.0-SNAPSHOT.jar:$ROOT/core-java/llm-explainer/target/llm-explainer-0.1.0-SNAPSHOT.jar"
+
+exec java -cp "$CP" dev.osmind.cli.SentinelCli "$@"

@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+SHORTCUT="$HOME/Desktop/OSMind.command"
+
+cat > "$SHORTCUT" <<EOF
+#!/usr/bin/env sh
+cd "$ROOT"
+exec sh scripts/osmind-gui
+EOF
+
+chmod +x "$SHORTCUT"
+printf 'Created macOS shortcut: %s\n' "$SHORTCUT"
