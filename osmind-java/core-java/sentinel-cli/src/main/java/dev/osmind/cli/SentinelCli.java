@@ -8,7 +8,9 @@ import dev.osmind.api.MacOsNotificationNotifier;
 import dev.osmind.api.SentinelService;
 import dev.osmind.behavior.BehaviorEngine;
 import dev.osmind.behavior.ProcessBehaviorProfile;
-import dev.osmind.explainer.TemplateExplainer;
+import dev.osmind.explainer.AdaptiveExplainer;
+import dev.osmind.explainer.AiMemory;
+import dev.osmind.explainer.AiMemoryStore;
 import dev.osmind.schema.EventType;
 import dev.osmind.schema.OsEvent;
 import dev.osmind.schema.ProcessIdentity;
@@ -36,7 +38,7 @@ public final class SentinelCli {
                 store,
                 new BehaviorEngine(),
                 new HeuristicAnomalyDetector(),
-                new TemplateExplainer()
+                new AdaptiveExplainer()
         );
         switch (args[0]) {
             case "seed-demo" -> seedDemo(sentinel);
@@ -45,6 +47,8 @@ public final class SentinelCli {
             case "clear-demo" -> clearDemo(sentinel);
             case "collect-once" -> collectOnce(sentinel);
             case "ask" -> ask(sentinel, String.join(" ", List.of(args).subList(1, args.length)));
+            case "ai-remember" -> remember(args);
+            case "ai-memory" -> printMemory();
             case "monitor" -> monitor(sentinel, args);
             case "profile" -> printProfiles(sentinel);
             default -> {
@@ -129,6 +133,27 @@ public final class SentinelCli {
         System.out.println("Collected " + collected + " live process snapshot events.");
     }
 
+    private static void remember(String[] args) {
+        if (args.length < 2) {
+            System.out.println("Usage: sentinel ai-remember \"note to learn\"");
+            return;
+        }
+        String text = String.join(" ", List.of(args).subList(1, args.length));
+        AiMemoryStore.defaultStore().remember("operator-note", text);
+        System.out.println("Remembered note in " + AiMemoryStore.defaultStore().path());
+    }
+
+    private static void printMemory() {
+        List<AiMemory> memories = AiMemoryStore.defaultStore().recent(20);
+        if (memories.isEmpty()) {
+            System.out.println("No AI memory entries yet.");
+            return;
+        }
+        for (AiMemory memory : memories) {
+            System.out.printf("%s [%s] %s%n", memory.timestamp(), memory.kind(), memory.text());
+        }
+    }
+
     private static long readLongOption(String[] args, String name, long fallback) {
         for (int i = 0; i < args.length - 1; i++) {
             if (name.equals(args[i])) {
@@ -211,6 +236,8 @@ public final class SentinelCli {
                   sentinel seed-heat-demo
                   sentinel clear-demo
                   sentinel collect-once
+                  sentinel ai-remember "Chrome is expected to use high CPU during video calls"
+                  sentinel ai-memory
                   sentinel ask "Why did my network traffic spike?"
                   sentinel ask "Почему у меня резко вырос сетевой трафик?"
                   sentinel monitor

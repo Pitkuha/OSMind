@@ -9,7 +9,7 @@ import dev.osmind.api.SentinelService;
 import dev.osmind.api.SentinelMonitor;
 import dev.osmind.behavior.BehaviorEngine;
 import dev.osmind.behavior.ProcessBehaviorProfile;
-import dev.osmind.explainer.TemplateExplainer;
+import dev.osmind.explainer.AdaptiveExplainer;
 import dev.osmind.schema.EventType;
 import dev.osmind.schema.OsEvent;
 import dev.osmind.schema.ProcessIdentity;
@@ -67,7 +67,7 @@ public final class SentinelUi {
                 new JsonlEventStore(defaultStorePath()),
                 new BehaviorEngine(),
                 new HeuristicAnomalyDetector(),
-                new TemplateExplainer()
+                new AdaptiveExplainer()
         );
         SwingUtilities.invokeLater(() -> new SentinelUi(service).show());
     }

@@ -16,7 +16,7 @@ OSMind is an early macOS-only prototype.
 - Java is the brain: event schema, storage, behavior engine, anomaly detector, explanation layer, API, CLI, and GUI.
 - The native layer target is macOS Endpoint Security. Collector source code is included under `agent-macos`.
 - Demo data is synthetic and useful for testing the Java brain and UI.
-- The current AI mode is local heuristic analysis plus an explanation module. A local LLM backend is planned, but no cloud AI calls are made.
+- AI mode supports a local Ollama-compatible LLM, persistent OSMind memory, and deterministic fallback. No cloud AI calls are made.
 - Analysis runs in two modes:
   - on demand, when the user asks a question;
   - continuously, through the background monitor, which checks for anomalies on an interval and emits alerts.
@@ -66,8 +66,17 @@ sh scripts/osmind-cli seed-network-demo
 sh scripts/osmind-cli seed-heat-demo
 sh scripts/osmind-cli clear-demo
 sh scripts/osmind-cli collect-once
+sh scripts/osmind-cli ai-remember "mds_stores can spike after a large file import"
+sh scripts/osmind-cli ai-memory
 sh scripts/osmind-cli ask "Why did my network traffic spike?"
 sh scripts/osmind-cli ask "Почему у меня резко вырос сетевой трафик?"
+```
+
+Configure a local LLM:
+
+```bash
+export OSMIND_LLM_ENDPOINT=http://localhost:11434/api/generate
+export OSMIND_LLM_MODEL=llama3.1
 ```
 
 `collect-once` uses Java `ProcessHandle` with a `ps` fallback. In restricted sandboxes it may degrade to a self-snapshot, but in a normal Terminal it should populate process profiles with live macOS processes.

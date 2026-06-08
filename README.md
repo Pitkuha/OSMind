@@ -70,9 +70,28 @@ osmind-java/
 
 ## AI Mode
 
-The current prototype uses a local heuristic analyzer plus an explanation module. It does not call a cloud LLM and does not send system data to any external service.
+OSMind has two AI layers:
 
-The `llm-explainer` module is intentionally separated so a local LLM backend can be added later without changing the CLI, GUI, storage, or native collector contracts.
+- Adaptive AI mode: a local Ollama-compatible LLM, persistent OSMind memory, and heuristic evidence.
+- Fallback mode: deterministic capability-aware reasoning when no local LLM is reachable.
+
+It does not call a cloud LLM and does not send system data to any external service.
+
+Run a local LLM with Ollama, then configure OSMind:
+
+```bash
+export OSMIND_LLM_ENDPOINT=http://localhost:11434/api/generate
+export OSMIND_LLM_MODEL=llama3.1
+```
+
+Teach OSMind operator knowledge:
+
+```bash
+sh scripts/osmind-cli ai-remember "Chrome high CPU is expected during video calls"
+sh scripts/osmind-cli ai-memory
+```
+
+If the local LLM is unavailable, OSMind explicitly says why and still uses deterministic reasoning plus saved memory notes.
 
 ## Requirements
 
@@ -114,6 +133,12 @@ Run the CLI demo:
 sh scripts/osmind-cli seed-network-demo
 sh scripts/osmind-cli seed-heat-demo
 sh scripts/osmind-cli ask "Why did my network traffic spike?"
+```
+
+Teach the AI memory:
+
+```bash
+sh scripts/osmind-cli ai-remember "mds_stores can spike after a large file import"
 ```
 
 Collect live process snapshots without Endpoint Security entitlement:
