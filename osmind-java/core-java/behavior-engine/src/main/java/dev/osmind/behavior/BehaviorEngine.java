@@ -43,6 +43,9 @@ public final class BehaviorEngine {
         private long connectCount;
         private long acceptCount;
         private long bytesWritten;
+        private long metricCount;
+        private double maxCpuPercent = -1;
+        private double maxMemoryPercent = -1;
         private final Set<String> fileTargets = new HashSet<>();
         private final Set<String> networkTargets = new HashSet<>();
         private final Set<String> childProcesses = new HashSet<>();
@@ -89,8 +92,24 @@ public final class BehaviorEngine {
                     acceptCount++;
                     networkTargets.add(event.target());
                 }
-                case PROCESS_EXIT, METRIC -> {
+                case METRIC -> {
+                    metricCount++;
+                    maxCpuPercent = Math.max(maxCpuPercent, parseDouble(event.attributes().get("cpuPercent"), -1));
+                    maxMemoryPercent = Math.max(maxMemoryPercent, parseDouble(event.attributes().get("memoryPercent"), -1));
                 }
+                case PROCESS_EXIT -> {
+                }
+            }
+        }
+
+        private double parseDouble(String value, double fallback) {
+            if (value == null || value.isBlank()) {
+                return fallback;
+            }
+            try {
+                return Double.parseDouble(value);
+            } catch (NumberFormatException exception) {
+                return fallback;
             }
         }
 
@@ -108,6 +127,9 @@ public final class BehaviorEngine {
                     connectCount,
                     acceptCount,
                     bytesWritten,
+                    metricCount,
+                    maxCpuPercent,
+                    maxMemoryPercent,
                     Set.copyOf(fileTargets),
                     Set.copyOf(networkTargets),
                     Set.copyOf(childProcesses)

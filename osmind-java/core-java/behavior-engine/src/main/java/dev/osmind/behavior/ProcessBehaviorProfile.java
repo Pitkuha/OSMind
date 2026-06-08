@@ -18,6 +18,9 @@ public record ProcessBehaviorProfile(
         long connectCount,
         long acceptCount,
         long bytesWritten,
+        long metricCount,
+        double maxCpuPercent,
+        double maxMemoryPercent,
         Set<String> fileTargets,
         Set<String> networkTargets,
         Set<String> childProcesses
@@ -28,5 +31,9 @@ public record ProcessBehaviorProfile(
 
     public boolean hasManyDistinctNetworkTargets(int threshold) {
         return networkTargets.size() >= threshold;
+    }
+
+    public boolean hasCpuTelemetry() {
+        return maxCpuPercent >= 0;
     }
 }

@@ -55,7 +55,7 @@ final class JsonlEventStoreCodec {
                 process,
                 fields.getOrDefault("target", ""),
                 parseLong(fields.get("bytes")),
-                Map.of()
+                parseAttributes(fields.getOrDefault("attrs", ""))
         ));
     }
 
@@ -86,6 +86,20 @@ final class JsonlEventStoreCodec {
             return 0;
         }
         return Long.parseLong(value);
+    }
+
+    private static Map<String, String> parseAttributes(String value) {
+        if (value == null || value.isBlank()) {
+            return Map.of();
+        }
+        Map<String, String> attrs = new LinkedHashMap<>();
+        for (String pair : value.split("&")) {
+            int separator = pair.indexOf('=');
+            if (separator > 0) {
+                attrs.put(unescape(pair.substring(0, separator)), unescape(pair.substring(separator + 1)));
+            }
+        }
+        return attrs;
     }
 
     private static String escape(String value) {

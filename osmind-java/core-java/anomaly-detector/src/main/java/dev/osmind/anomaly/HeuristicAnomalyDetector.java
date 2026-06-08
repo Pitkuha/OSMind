@@ -15,6 +15,7 @@ public final class HeuristicAnomalyDetector implements AnomalyDetector {
             detectRansomwareLike(profile, anomalies);
             detectDropperLike(profile, anomalies);
             detectNetworkSpike(profile, anomalies);
+            detectHighCpu(profile, anomalies);
         }
         return anomalies;
     }
@@ -72,5 +73,29 @@ public final class HeuristicAnomalyDetector implements AnomalyDetector {
                     "If this is not an expected crawler, build, or sync task, pause the process and inspect the destinations."
             ));
         }
+    }
+
+    private void detectHighCpu(ProcessBehaviorProfile profile, List<Anomaly> anomalies) {
+        if (profile.maxCpuPercent() >= 80) {
+            anomalies.add(new Anomaly(
+                    "high-cpu",
+                    Severity.MEDIUM,
+                    "A process is using high CPU",
+                    profile,
+                    List.of(
+                            "reported CPU usage: " + String.format(Locale.ROOT, "%.1f%%", profile.maxCpuPercent()),
+                            "reported memory usage: " + formatPercent(profile.maxMemoryPercent()),
+                            "command: " + profile.process().commandLine()
+                    ),
+                    "Inspect the process. If it is not expected work, pause or quit it and check whether the laptop cools down."
+            ));
+        }
+    }
+
+    private String formatPercent(double value) {
+        if (value < 0) {
+            return "unknown";
+        }
+        return String.format(Locale.ROOT, "%.1f%%", value);
     }
 }

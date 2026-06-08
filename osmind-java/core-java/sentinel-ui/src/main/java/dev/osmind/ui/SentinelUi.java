@@ -124,6 +124,7 @@ public final class SentinelUi {
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         JButton askButton = new JButton("Ask Sentinel");
         JButton demoButton = new JButton("Load Network Demo");
+        JButton heatDemoButton = new JButton("Load Heat Demo");
         JButton collectButton = new JButton("Collect Live Snapshot");
         JButton clearDemoButton = new JButton("Clear Demo Data");
         JButton refreshButton = new JButton("Refresh Profiles");
@@ -133,11 +134,18 @@ public final class SentinelUi {
             refreshProfiles();
             ask();
         });
+        heatDemoButton.addActionListener(event -> {
+            seedHeatDemo();
+            questionArea.setText("Why is my laptop so hot?\n\nПочему ноутбук так сильно нагрелся?");
+            refreshProfiles();
+            ask();
+        });
         collectButton.addActionListener(event -> collectLiveSnapshot());
         clearDemoButton.addActionListener(event -> clearDemoData());
         refreshButton.addActionListener(event -> refreshProfiles());
         actions.add(askButton);
         actions.add(demoButton);
+        actions.add(heatDemoButton);
         actions.add(collectButton);
         actions.add(clearDemoButton);
         actions.add(refreshButton);
@@ -213,6 +221,8 @@ public final class SentinelUi {
                     .append(" | connects ").append(profile.connectCount())
                     .append(" | network targets ").append(profile.networkTargets().size())
                     .append(" | writes ").append(profile.writeCount())
+                    .append(" | cpu ").append(formatPercent(profile.maxCpuPercent()))
+                    .append(" | mem ").append(formatPercent(profile.maxMemoryPercent()))
                     .append('\n')
                     .append("cwd: ").append(profile.process().workingDirectory())
                     .append("\ncmd: ").append(profile.process().commandLine())
@@ -270,6 +280,28 @@ public final class SentinelUi {
         updateStatus("Loaded macOS network demo events.");
     }
 
+    private void seedHeatDemo() {
+        Instant now = Instant.now();
+        ProcessIdentity mds = new ProcessIdentity(
+                2751,
+                1,
+                "mds_stores",
+                "/System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Support/mds_stores",
+                "",
+                "mds_stores"
+        );
+        sentinel.ingest(new OsEvent(
+                now,
+                "demo-agent",
+                EventType.METRIC,
+                mds,
+                "process-snapshot",
+                0,
+                Map.of("collector", "demo", "cpuPercent", "91.4", "memoryPercent", "4.2")
+        ));
+        updateStatus("Loaded macOS heat demo events.");
+    }
+
     private void clearDemoData() {
         int removed = sentinel.clearDemoEvents();
         answerArea.setText("");
@@ -286,6 +318,13 @@ public final class SentinelUi {
 
     private void updateStatus(String message) {
         statusLabel.setText(message);
+    }
+
+    private String formatPercent(double value) {
+        if (value < 0) {
+            return "unknown";
+        }
+        return String.format(java.util.Locale.ROOT, "%.1f%%", value);
     }
 
     private static Path defaultStorePath() {

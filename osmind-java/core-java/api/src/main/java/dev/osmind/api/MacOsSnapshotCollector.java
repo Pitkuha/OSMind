@@ -45,7 +45,7 @@ public final class MacOsSnapshotCollector {
                     new ProcessIdentity(handle.pid(), ppid, name, command, "", commandLine),
                     "process-snapshot",
                     0,
-                    Map.of("collector", "ProcessHandle")
+                    Map.of("collector", "ProcessHandle", "cpuPercent", "-1", "memoryPercent", "-1")
             ));
             count++;
         }
@@ -55,24 +55,28 @@ public final class MacOsSnapshotCollector {
     private int collectWithPs() {
         Instant now = Instant.now();
         int count = 0;
-        ProcessBuilder builder = new ProcessBuilder("/bin/ps", "-axo", "pid=,ppid=,comm=,command=");
+        ProcessBuilder builder = new ProcessBuilder("/bin/ps", "-axo", "pid=,ppid=,%cpu=,%mem=,comm=,command=");
         try {
             Process process = builder.start();
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    ProcessIdentity identity = parsePsLine(line);
-                    if (identity == null) {
+                    PsSnapshot snapshot = parsePsLine(line);
+                    if (snapshot == null) {
                         continue;
                     }
                     sentinel.ingest(new OsEvent(
                             now,
                             "macos-userspace-snapshot",
                             EventType.METRIC,
-                            identity,
+                            snapshot.identity(),
                             "process-snapshot",
                             0,
-                            Map.of("collector", "ps")
+                            Map.of(
+                                    "collector", "ps",
+                                    "cpuPercent", Double.toString(snapshot.cpuPercent()),
+                                    "memoryPercent", Double.toString(snapshot.memoryPercent())
+                            )
                     ));
                     count++;
                 }
@@ -87,20 +91,23 @@ public final class MacOsSnapshotCollector {
         }
     }
 
-    private ProcessIdentity parsePsLine(String line) {
+    private PsSnapshot parsePsLine(String line) {
         String trimmed = line.trim();
         if (trimmed.isBlank()) {
             return null;
         }
-        String[] parts = trimmed.split("\\s+", 4);
-        if (parts.length < 3) {
+        String[] parts = trimmed.split("\\s+", 6);
+        if (parts.length < 5) {
             return null;
         }
         long pid = parseLong(parts[0]);
         long ppid = parseLong(parts[1]);
-        String command = parts[2];
-        String commandLine = parts.length >= 4 ? parts[3] : command;
-        return new ProcessIdentity(pid, ppid, processName(command, commandLine), command, "", commandLine);
+        double cpuPercent = parseDouble(parts[2]);
+        double memoryPercent = parseDouble(parts[3]);
+        String command = parts[4];
+        String commandLine = parts.length >= 6 ? parts[5] : command;
+        ProcessIdentity identity = new ProcessIdentity(pid, ppid, processName(command, commandLine), command, "", commandLine);
+        return new PsSnapshot(identity, cpuPercent, memoryPercent);
     }
 
     private int collectSelfSnapshot() {
@@ -116,7 +123,7 @@ public final class MacOsSnapshotCollector {
                 new ProcessIdentity(current.pid(), ppid, processName(command, commandLine), command, "", commandLine),
                 "process-snapshot",
                 0,
-                Map.of("collector", "self", "degraded", "process enumeration was blocked")
+                Map.of("collector", "self", "degraded", "process enumeration was blocked", "cpuPercent", "-1", "memoryPercent", "-1")
         ));
         return 1;
     }
@@ -129,6 +136,14 @@ public final class MacOsSnapshotCollector {
         }
     }
 
+    private double parseDouble(String value) {
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException exception) {
+            return -1;
+        }
+    }
+
     private String processName(String command, String commandLine) {
         String source = command == null || command.isBlank() ? commandLine : command;
         if (source == null || source.isBlank()) {
@@ -138,5 +153,8 @@ public final class MacOsSnapshotCollector {
         String basename = slash >= 0 ? source.substring(slash + 1) : source;
         int space = basename.indexOf(' ');
         return space >= 0 ? basename.substring(0, space) : basename;
+    }
+
+    private record PsSnapshot(ProcessIdentity identity, double cpuPercent, double memoryPercent) {
     }
 }

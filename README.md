@@ -112,6 +112,7 @@ Run the CLI demo:
 
 ```bash
 sh scripts/osmind-cli seed-network-demo
+sh scripts/osmind-cli seed-heat-demo
 sh scripts/osmind-cli ask "Why did my network traffic spike?"
 ```
 

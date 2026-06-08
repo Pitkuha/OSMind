@@ -41,6 +41,7 @@ public final class SentinelCli {
         switch (args[0]) {
             case "seed-demo" -> seedDemo(sentinel);
             case "seed-network-demo" -> seedDemo(sentinel);
+            case "seed-heat-demo" -> seedHeatDemo(sentinel);
             case "clear-demo" -> clearDemo(sentinel);
             case "collect-once" -> collectOnce(sentinel);
             case "ask" -> ask(sentinel, String.join(" ", List.of(args).subList(1, args.length)));
@@ -71,7 +72,17 @@ public final class SentinelCli {
                     profile.networkTargets().size(),
                     profile.process().workingDirectory()
             );
+            if (profile.hasCpuTelemetry()) {
+                System.out.printf("  cpu=%.1f%% memory=%s%n", profile.maxCpuPercent(), formatPercent(profile.maxMemoryPercent()));
+            }
         }
+    }
+
+    private static String formatPercent(double value) {
+        if (value < 0) {
+            return "unknown";
+        }
+        return String.format(java.util.Locale.ROOT, "%.1f%%", value);
     }
 
     private static void monitor(SentinelService sentinel, String[] args) {
@@ -156,6 +167,28 @@ public final class SentinelCli {
         System.out.println("macOS network demo events written to " + defaultStorePath());
     }
 
+    private static void seedHeatDemo(SentinelService sentinel) {
+        Instant now = Instant.now();
+        ProcessIdentity mds = new ProcessIdentity(
+                2751,
+                1,
+                "mds_stores",
+                "/System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Support/mds_stores",
+                "",
+                "mds_stores"
+        );
+        sentinel.ingest(new OsEvent(
+                now,
+                "demo-agent",
+                EventType.METRIC,
+                mds,
+                "process-snapshot",
+                0,
+                Map.of("collector", "demo", "cpuPercent", "91.4", "memoryPercent", "4.2")
+        ));
+        System.out.println("macOS heat demo events written to " + defaultStorePath());
+    }
+
     private static Path defaultStorePath() {
         String explicitStore = System.getenv("OSMIND_STORE");
         if (explicitStore != null && !explicitStore.isBlank()) {
@@ -175,6 +208,7 @@ public final class SentinelCli {
                 Commands:
                   sentinel seed-demo
                   sentinel seed-network-demo
+                  sentinel seed-heat-demo
                   sentinel clear-demo
                   sentinel collect-once
                   sentinel ask "Why did my network traffic spike?"

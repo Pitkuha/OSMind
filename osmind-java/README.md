@@ -63,6 +63,7 @@ Run the CLI:
 
 ```bash
 sh scripts/osmind-cli seed-network-demo
+sh scripts/osmind-cli seed-heat-demo
 sh scripts/osmind-cli clear-demo
 sh scripts/osmind-cli collect-once
 sh scripts/osmind-cli ask "Why did my network traffic spike?"
