@@ -64,9 +64,12 @@ Run the CLI:
 ```bash
 sh scripts/osmind-cli seed-network-demo
 sh scripts/osmind-cli clear-demo
+sh scripts/osmind-cli collect-once
 sh scripts/osmind-cli ask "Why did my network traffic spike?"
 sh scripts/osmind-cli ask "Почему у меня резко вырос сетевой трафик?"
 ```
+
+`collect-once` uses Java `ProcessHandle` with a `ps` fallback. In restricted sandboxes it may degrade to a self-snapshot, but in a normal Terminal it should populate process profiles with live macOS processes.
 
 Run the background monitor:
 
@@ -117,6 +120,12 @@ sh scripts/run-macos-collector
 ```
 
 Run this command from an interactive Terminal, because `sudo` must be able to ask for your password. The collector requires a signed binary with Apple's approved `com.apple.developer.endpoint-security.client` entitlement. Without that entitlement, macOS rejects the Endpoint Security client at runtime.
+
+Install the signed collector as a LaunchDaemon:
+
+```bash
+sh scripts/install-macos-collector-launchd
+```
 
 ## macOS Shortcut
 

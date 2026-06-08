@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+TEMPLATE="$ROOT/agent-macos/launchd/dev.osmind.escollector.plist.template"
+PLIST="/Library/LaunchDaemons/dev.osmind.escollector.plist"
+STORE="${OSMIND_STORE:-/var/db/osmind/events.jsonl}"
+
+if [ ! -x "$ROOT/agent-macos/build/osmind-es-collector" ]; then
+  sh "$ROOT/scripts/build-macos-collector"
+fi
+
+TMP=$(mktemp)
+sed \
+  -e "s#__OSMIND_ROOT__#$ROOT#g" \
+  -e "s#__OSMIND_STORE__#$STORE#g" \
+  "$TEMPLATE" > "$TMP"
+
+printf 'Installing LaunchDaemon requires sudo.\n'
+sudo mkdir -p "$(dirname "$STORE")"
+sudo cp "$TMP" "$PLIST"
+sudo chown root:wheel "$PLIST"
+sudo chmod 644 "$PLIST"
+sudo launchctl bootstrap system "$PLIST" || sudo launchctl kickstart -k system/dev.osmind.escollector
+rm -f "$TMP"
+
+printf 'Installed LaunchDaemon: %s\n' "$PLIST"
+printf 'Event store: %s\n' "$STORE"

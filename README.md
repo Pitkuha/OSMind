@@ -115,6 +115,15 @@ sh scripts/osmind-cli seed-network-demo
 sh scripts/osmind-cli ask "Why did my network traffic spike?"
 ```
 
+Collect live process snapshots without Endpoint Security entitlement:
+
+```bash
+sh scripts/osmind-cli collect-once
+sh scripts/osmind-cli profile
+```
+
+In a normal Terminal this uses Java `ProcessHandle` with a `ps` fallback. In restricted sandboxes it may degrade to a self-snapshot instead of failing.
+
 Clear demo data:
 
 ```bash
@@ -159,6 +168,21 @@ sh scripts/run-macos-collector
 
 Run this command from an interactive Terminal, because `sudo` must be able to ask for your password. The collector requires macOS Endpoint Security entitlement approval from Apple. Without a signed binary carrying an Apple-approved `com.apple.developer.endpoint-security.client` entitlement, macOS will reject the ES client at runtime.
 
+Install the signed ES collector as a LaunchDaemon:
+
+```bash
+sh scripts/install-macos-collector-launchd
+```
+
+Endpoint Security production checklist:
+
+1. Join Apple Developer Program.
+2. Request Endpoint Security entitlement for your Team ID.
+3. Install the approved signing certificate locally.
+4. Sign with `OSMIND_CODESIGN_IDENTITY="Developer ID Application: ..."` and `sh scripts/sign-macos-collector`.
+5. Run `sh scripts/doctor-macos-collector`.
+6. Start from interactive Terminal with `sh scripts/run-macos-collector`, or install LaunchDaemon.
+
 ## GUI
 
 Start the GUI:
@@ -173,6 +197,7 @@ The GUI includes:
 - a large question field
 - `Ask Sentinel`
 - `Load Network Demo`
+- `Collect Live Snapshot`
 - `Clear Demo Data`
 - `Refresh Profiles`
 - answer panel

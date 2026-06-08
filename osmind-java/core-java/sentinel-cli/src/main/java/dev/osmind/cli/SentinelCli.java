@@ -3,6 +3,7 @@ package dev.osmind.cli;
 import dev.osmind.anomaly.HeuristicAnomalyDetector;
 import dev.osmind.api.Alert;
 import dev.osmind.api.ConsoleAlertNotifier;
+import dev.osmind.api.MacOsSnapshotCollector;
 import dev.osmind.api.MacOsNotificationNotifier;
 import dev.osmind.api.SentinelService;
 import dev.osmind.behavior.BehaviorEngine;
@@ -41,6 +42,7 @@ public final class SentinelCli {
             case "seed-demo" -> seedDemo(sentinel);
             case "seed-network-demo" -> seedDemo(sentinel);
             case "clear-demo" -> clearDemo(sentinel);
+            case "collect-once" -> collectOnce(sentinel);
             case "ask" -> ask(sentinel, String.join(" ", List.of(args).subList(1, args.length)));
             case "monitor" -> monitor(sentinel, args);
             case "profile" -> printProfiles(sentinel);
@@ -111,6 +113,11 @@ public final class SentinelCli {
         System.out.println("Removed " + removed + " demo events.");
     }
 
+    private static void collectOnce(SentinelService sentinel) {
+        int collected = new MacOsSnapshotCollector(sentinel).collectOnce();
+        System.out.println("Collected " + collected + " live process snapshot events.");
+    }
+
     private static long readLongOption(String[] args, String name, long fallback) {
         for (int i = 0; i < args.length - 1; i++) {
             if (name.equals(args[i])) {
@@ -169,6 +176,7 @@ public final class SentinelCli {
                   sentinel seed-demo
                   sentinel seed-network-demo
                   sentinel clear-demo
+                  sentinel collect-once
                   sentinel ask "Why did my network traffic spike?"
                   sentinel ask "Почему у меня резко вырос сетевой трафик?"
                   sentinel monitor

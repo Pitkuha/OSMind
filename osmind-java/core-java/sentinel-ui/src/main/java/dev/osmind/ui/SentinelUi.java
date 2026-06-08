@@ -3,6 +3,7 @@ package dev.osmind.ui;
 import dev.osmind.anomaly.HeuristicAnomalyDetector;
 import dev.osmind.api.Alert;
 import dev.osmind.api.ConsoleAlertNotifier;
+import dev.osmind.api.MacOsSnapshotCollector;
 import dev.osmind.api.MacOsNotificationNotifier;
 import dev.osmind.api.SentinelService;
 import dev.osmind.api.SentinelMonitor;
@@ -123,6 +124,7 @@ public final class SentinelUi {
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         JButton askButton = new JButton("Ask Sentinel");
         JButton demoButton = new JButton("Load Network Demo");
+        JButton collectButton = new JButton("Collect Live Snapshot");
         JButton clearDemoButton = new JButton("Clear Demo Data");
         JButton refreshButton = new JButton("Refresh Profiles");
         askButton.addActionListener(event -> ask());
@@ -131,10 +133,12 @@ public final class SentinelUi {
             refreshProfiles();
             ask();
         });
+        collectButton.addActionListener(event -> collectLiveSnapshot());
         clearDemoButton.addActionListener(event -> clearDemoData());
         refreshButton.addActionListener(event -> refreshProfiles());
         actions.add(askButton);
         actions.add(demoButton);
+        actions.add(collectButton);
         actions.add(clearDemoButton);
         actions.add(refreshButton);
         header.add(actions, BorderLayout.SOUTH);
@@ -272,6 +276,12 @@ public final class SentinelUi {
         alertArea.setText("");
         refreshProfiles();
         updateStatus("Cleared " + removed + " demo events. Live and native collector events were kept.");
+    }
+
+    private void collectLiveSnapshot() {
+        int collected = new MacOsSnapshotCollector(sentinel).collectOnce();
+        refreshProfiles();
+        updateStatus("Collected " + collected + " live process snapshot events.");
     }
 
     private void updateStatus(String message) {
