@@ -1,0 +1,38 @@
+#!/usr/bin/env sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+SDK_PATH=$(xcrun --show-sdk-path 2>/dev/null || true)
+BIN="$ROOT/agent-macos/build/osmind-es-collector"
+
+printf 'OSMind macOS collector doctor\n\n'
+
+printf 'macOS: '
+sw_vers -productVersion
+
+printf 'Developer dir: '
+xcode-select -p
+
+printf 'SDK path: %s\n' "$SDK_PATH"
+
+if [ -n "$SDK_PATH" ] && [ -f "$SDK_PATH/usr/include/EndpointSecurity/EndpointSecurity.h" ] && [ -f "$SDK_PATH/usr/lib/libEndpointSecurity.tbd" ]; then
+  printf 'Endpoint Security SDK: OK\n'
+else
+  printf 'Endpoint Security SDK: MISSING\n'
+  printf 'Install or repair Xcode / Command Line Tools.\n'
+fi
+
+if [ -x "$BIN" ]; then
+  printf 'Collector binary: OK (%s)\n' "$BIN"
+  codesign -dv --entitlements - "$BIN" 2>&1 || true
+else
+  printf 'Collector binary: MISSING. Run sh scripts/build-macos-collector\n'
+fi
+
+if sudo -n true 2>/dev/null; then
+  printf 'sudo non-interactive: OK\n'
+else
+  printf 'sudo non-interactive: unavailable. Running the collector may prompt for a password in Terminal.\n'
+fi
+
+printf '\nImportant: Endpoint Security requires Apple-approved com.apple.developer.endpoint-security.client entitlement. Ad-hoc signing is useful for local diagnostics but is usually not enough for a working ES client.\n'

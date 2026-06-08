@@ -8,4 +8,18 @@ if [ ! -x agent-macos/build/osmind-es-collector ]; then
   sh scripts/build-macos-collector
 fi
 
-exec sudo agent-macos/build/osmind-es-collector
+if ! codesign -dv agent-macos/build/osmind-es-collector >/dev/null 2>&1; then
+  sh scripts/sign-macos-collector
+fi
+
+if [ "$(id -u)" -eq 0 ]; then
+  exec agent-macos/build/osmind-es-collector
+fi
+
+printf 'OSMind collector needs elevated privileges for Endpoint Security. macOS may also require a signed binary with Apple-approved Endpoint Security entitlement.\n'
+if [ ! -t 0 ]; then
+  printf 'This script is not running in an interactive Terminal, so sudo cannot ask for a password.\n'
+  printf 'Open Terminal and run: cd "%s" && sh scripts/run-macos-collector\n' "$ROOT"
+  exit 1
+fi
+exec sudo -E agent-macos/build/osmind-es-collector

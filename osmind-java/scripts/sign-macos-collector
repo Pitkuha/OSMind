@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+BIN="$ROOT/agent-macos/build/osmind-es-collector"
+ENTITLEMENTS="$ROOT/agent-macos/entitlements/osmind-es-collector.entitlements"
+IDENTITY="${OSMIND_CODESIGN_IDENTITY:--}"
+
+if [ ! -x "$BIN" ]; then
+  sh "$ROOT/scripts/build-macos-collector"
+fi
+
+codesign --force --options runtime --entitlements "$ENTITLEMENTS" --sign "$IDENTITY" "$BIN"
+codesign -dv --entitlements - "$BIN" 2>&1

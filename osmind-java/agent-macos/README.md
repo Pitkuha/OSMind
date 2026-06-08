@@ -27,6 +27,28 @@ sh scripts/build-macos-collector
 
 The build uses `EndpointSecurity.framework`, so Xcode or Command Line Tools must provide a macOS SDK containing that framework.
 
+## Doctor
+
+Check whether the local machine has the SDK, binary, signing information, and sudo path needed for the collector:
+
+```bash
+sh scripts/doctor-macos-collector
+```
+
+## Sign
+
+For local diagnostics, ad-hoc signing can embed the entitlement template:
+
+```bash
+sh scripts/sign-macos-collector
+```
+
+For real Endpoint Security operation, use an Apple Developer identity that has the Endpoint Security entitlement approved:
+
+```bash
+OSMIND_CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" sh scripts/sign-macos-collector
+```
+
 ## Run
 
 ```bash
@@ -34,7 +56,7 @@ cd osmind-java
 sh scripts/run-macos-collector
 ```
 
-The run script uses `sudo` because Endpoint Security clients require elevated privileges.
+Run this command from an interactive Terminal. The run script uses `sudo` because Endpoint Security clients require elevated privileges, and `sudo` must be able to ask for your password.
 
 ## Storage
 

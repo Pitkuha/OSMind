@@ -139,13 +139,25 @@ Build the macOS Endpoint Security collector:
 sh scripts/build-macos-collector
 ```
 
+Check collector readiness:
+
+```bash
+sh scripts/doctor-macos-collector
+```
+
+Sign the collector for local diagnostics:
+
+```bash
+sh scripts/sign-macos-collector
+```
+
 Run the collector:
 
 ```bash
 sh scripts/run-macos-collector
 ```
 
-The collector requires macOS Endpoint Security entitlement approval from Apple. Without a signed binary carrying `com.apple.developer.endpoint-security.client`, macOS will reject the ES client at runtime.
+Run this command from an interactive Terminal, because `sudo` must be able to ask for your password. The collector requires macOS Endpoint Security entitlement approval from Apple. Without a signed binary carrying an Apple-approved `com.apple.developer.endpoint-security.client` entitlement, macOS will reject the ES client at runtime.
 
 ## GUI
 

@@ -98,13 +98,25 @@ Build the native macOS collector:
 sh scripts/build-macos-collector
 ```
 
+Check native collector readiness:
+
+```bash
+sh scripts/doctor-macos-collector
+```
+
+Sign the collector for local diagnostics:
+
+```bash
+sh scripts/sign-macos-collector
+```
+
 Run the native macOS collector:
 
 ```bash
 sh scripts/run-macos-collector
 ```
 
-The collector requires a signed binary with Apple's `com.apple.developer.endpoint-security.client` entitlement. Without that entitlement, macOS rejects the Endpoint Security client at runtime.
+Run this command from an interactive Terminal, because `sudo` must be able to ask for your password. The collector requires a signed binary with Apple's approved `com.apple.developer.endpoint-security.client` entitlement. Without that entitlement, macOS rejects the Endpoint Security client at runtime.
 
 ## macOS Shortcut
 
