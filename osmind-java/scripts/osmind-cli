@@ -4,6 +4,6 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$ROOT"
 
-mvn -q package
+sh scripts/build-java
 
 exec sh scripts/sentinel "$@"

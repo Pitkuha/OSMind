@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+LOCKDIR="${TMPDIR:-/tmp}/osmind-maven-build.lock"
+
+while ! mkdir "$LOCKDIR" 2>/dev/null; do
+  sleep 1
+done
+trap 'rmdir "$LOCKDIR"' EXIT INT TERM
+
+cd "$ROOT"
+mvn -q package

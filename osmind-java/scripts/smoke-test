@@ -4,13 +4,14 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$ROOT"
 
-mvn -q package
+sh scripts/build-java
 SMOKE_HOME="/tmp/osmind-smoke-$$"
 mkdir -p "$SMOKE_HOME"
 OSMIND_HOME="$SMOKE_HOME" sh scripts/osmind-cli seed-network-demo >"$SMOKE_HOME/seed.log"
 OSMIND_HOME="$SMOKE_HOME" sh scripts/osmind-cli seed-heat-demo >"$SMOKE_HOME/seed-heat.log"
 SNAPSHOT=$(OSMIND_HOME="$SMOKE_HOME" sh scripts/osmind-cli collect-once)
 EMPTY_NETWORK=$(OSMIND_HOME="$SMOKE_HOME-empty" sh scripts/osmind-cli ask "Why did my network traffic spike?")
+EMPTY_UNKNOWN=$(OSMIND_HOME="$SMOKE_HOME-empty-unknown" sh scripts/osmind-cli ask "Что вообще происходит?")
 ANSWER=$(OSMIND_HOME="$SMOKE_HOME" sh scripts/osmind-cli ask "Почему у меня резко вырос сетевой трафик?")
 HEAT=$(OSMIND_HOME="$SMOKE_HOME" sh scripts/osmind-cli ask "Почему ноутбук так сильно нагрелся?")
 MONITOR=$(OSMIND_HOME="$SMOKE_HOME" OSMIND_DISABLE_NOTIFICATIONS=true sh scripts/osmind-cli monitor --once)
@@ -25,6 +26,8 @@ printf '%s\n' "$ANSWER" | grep -q "42 outbound TCP connections"
 printf '%s\n' "$SNAPSHOT" | grep -q "Collected"
 printf '%s\n' "$EMPTY_NETWORK" | grep -q "I do not see a network spike"
 printf '%s\n' "$EMPTY_NETWORK" | grep -q "observed profiles: 0"
+printf '%s\n' "$EMPTY_UNKNOWN" | grep -q "What I cannot say yet"
+printf '%s\n' "$EMPTY_UNKNOWN" | grep -q "without collected events"
 printf '%s\n' "$MONITOR" | grep -q "A process opened many outbound connections"
 printf '%s\n' "$HEAT" | grep -q "high CPU"
 printf '%s\n' "$HEAT" | grep -q "mds_stores"
