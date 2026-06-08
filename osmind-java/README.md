@@ -63,6 +63,7 @@ Run the CLI:
 
 ```bash
 sh scripts/osmind-cli seed-network-demo
+sh scripts/osmind-cli clear-demo
 sh scripts/osmind-cli ask "Why did my network traffic spike?"
 sh scripts/osmind-cli ask "Почему у меня резко вырос сетевой трафик?"
 ```
@@ -158,6 +159,8 @@ AI mode: local heuristic analyzer plus explanation module. A local LLM backend i
 ## Background Alerts
 
 The GUI starts a background anomaly monitor automatically. It checks recent events every 30 seconds, writes alerts to the `Background Alerts` panel, and uses macOS notifications for new alerts.
+
+Demo events are persistent by design so they can be analyzed by the same pipeline as live events. Use `Clear Demo Data` in the GUI, or `sh scripts/osmind-cli clear-demo` in the CLI, to remove synthetic demo events while keeping native collector events.
 
 The CLI can run the same monitor:
 

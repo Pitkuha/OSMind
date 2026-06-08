@@ -123,6 +123,7 @@ public final class SentinelUi {
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         JButton askButton = new JButton("Ask Sentinel");
         JButton demoButton = new JButton("Load Network Demo");
+        JButton clearDemoButton = new JButton("Clear Demo Data");
         JButton refreshButton = new JButton("Refresh Profiles");
         askButton.addActionListener(event -> ask());
         demoButton.addActionListener(event -> {
@@ -130,9 +131,11 @@ public final class SentinelUi {
             refreshProfiles();
             ask();
         });
+        clearDemoButton.addActionListener(event -> clearDemoData());
         refreshButton.addActionListener(event -> refreshProfiles());
         actions.add(askButton);
         actions.add(demoButton);
+        actions.add(clearDemoButton);
         actions.add(refreshButton);
         header.add(actions, BorderLayout.SOUTH);
 
@@ -261,6 +264,14 @@ public final class SentinelUi {
             ));
         }
         updateStatus("Loaded macOS network demo events.");
+    }
+
+    private void clearDemoData() {
+        int removed = sentinel.clearDemoEvents();
+        answerArea.setText("");
+        alertArea.setText("");
+        refreshProfiles();
+        updateStatus("Cleared " + removed + " demo events. Live and native collector events were kept.");
     }
 
     private void updateStatus(String message) {

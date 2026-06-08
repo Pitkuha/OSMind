@@ -34,6 +34,10 @@ public final class SentinelService {
         store.append(event);
     }
 
+    public int clearDemoEvents() {
+        return store.removeIf(event -> event.sourceAgent().contains("demo"));
+    }
+
     public List<ProcessBehaviorProfile> profiles(Duration lookback) {
         return behaviorEngine.buildProfiles(store.last(lookback));
     }

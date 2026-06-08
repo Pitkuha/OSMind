@@ -115,6 +115,12 @@ sh scripts/osmind-cli seed-network-demo
 sh scripts/osmind-cli ask "Why did my network traffic spike?"
 ```
 
+Clear demo data:
+
+```bash
+sh scripts/osmind-cli clear-demo
+```
+
 Ask in Russian:
 
 ```bash
@@ -155,12 +161,15 @@ The GUI includes:
 - a large question field
 - `Ask Sentinel`
 - `Load Network Demo`
+- `Clear Demo Data`
 - `Refresh Profiles`
 - answer panel
 - observed process profile panel
 - background alert panel
 
 The GUI starts a background anomaly monitor automatically. It checks recent events every 30 seconds and writes new findings to the `Background Alerts` panel.
+
+Demo events are stored in the same local event store so the analyzer can process them exactly like live events. Use `Clear Demo Data` in the GUI, or `sh scripts/osmind-cli clear-demo` in the CLI, to leave demo mode and remove synthetic demo events while keeping native collector events.
 
 ## macOS Shortcut
 
@@ -187,6 +196,12 @@ Seed synthetic demo events:
 
 ```bash
 sh scripts/osmind-cli seed-network-demo
+```
+
+Clear synthetic demo events:
+
+```bash
+sh scripts/osmind-cli clear-demo
 ```
 
 Ask a question:

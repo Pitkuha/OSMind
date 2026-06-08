@@ -40,6 +40,7 @@ public final class SentinelCli {
         switch (args[0]) {
             case "seed-demo" -> seedDemo(sentinel);
             case "seed-network-demo" -> seedDemo(sentinel);
+            case "clear-demo" -> clearDemo(sentinel);
             case "ask" -> ask(sentinel, String.join(" ", List.of(args).subList(1, args.length)));
             case "monitor" -> monitor(sentinel, args);
             case "profile" -> printProfiles(sentinel);
@@ -105,6 +106,11 @@ public final class SentinelCli {
         }
     }
 
+    private static void clearDemo(SentinelService sentinel) {
+        int removed = sentinel.clearDemoEvents();
+        System.out.println("Removed " + removed + " demo events.");
+    }
+
     private static long readLongOption(String[] args, String name, long fallback) {
         for (int i = 0; i < args.length - 1; i++) {
             if (name.equals(args[i])) {
@@ -162,6 +168,7 @@ public final class SentinelCli {
                 Commands:
                   sentinel seed-demo
                   sentinel seed-network-demo
+                  sentinel clear-demo
                   sentinel ask "Why did my network traffic spike?"
                   sentinel ask "Почему у меня резко вырос сетевой трафик?"
                   sentinel monitor
