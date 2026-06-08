@@ -1,5 +1,6 @@
 target/
 dist/
+agent-macos/build/
 .idea/
 *.iml
 .DS_Store

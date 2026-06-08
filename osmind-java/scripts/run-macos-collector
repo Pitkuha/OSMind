@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$ROOT"
+
+if [ ! -x agent-macos/build/osmind-es-collector ]; then
+  sh scripts/build-macos-collector
+fi
+
+exec sudo agent-macos/build/osmind-es-collector

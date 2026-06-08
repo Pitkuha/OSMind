@@ -17,6 +17,7 @@ This repository is ready for early developer testing, but it is not production s
 Current capabilities:
 
 - macOS-focused Java core.
+- Native macOS Endpoint Security collector source code.
 - CLI and desktop GUI.
 - English interface.
 - Russian questions are understood by the question router.
@@ -28,8 +29,8 @@ Current capabilities:
 
 Not implemented yet:
 
-- Live macOS Endpoint Security collector.
-- Real syscall/event ingestion from the operating system.
+- Signed and entitlement-approved collector distribution.
+- General TCP connection telemetry from a native macOS source.
 - Local LLM backend.
 - Signed `.app` distribution.
 
@@ -47,7 +48,7 @@ Java is the brain of the system:
 - GUI
 - background monitoring
 
-The native macOS layer will stay intentionally small. Its job will be to collect low-level events through Endpoint Security and send normalized events to the Java core.
+The native macOS layer stays intentionally small. Its job is to collect low-level events through Endpoint Security and write normalized events into the Java-readable event store.
 
 Project layout:
 
@@ -125,6 +126,20 @@ Run the smoke test:
 ```bash
 sh scripts/smoke-test
 ```
+
+Build the macOS Endpoint Security collector:
+
+```bash
+sh scripts/build-macos-collector
+```
+
+Run the collector:
+
+```bash
+sh scripts/run-macos-collector
+```
+
+The collector requires macOS Endpoint Security entitlement approval from Apple. Without a signed binary carrying `com.apple.developer.endpoint-security.client`, macOS will reject the ES client at runtime.
 
 ## GUI
 
@@ -268,18 +283,29 @@ For demo data, a monitor alert looks like:
 [MEDIUM] A process opened many outbound connections: node (PID 1842): A process opened many outbound connections
 ```
 
-## macOS Native Collector Roadmap
+## macOS Native Collector
 
-The Java core is ready to receive normalized OS events. The next major step is the macOS native collector:
+The collector lives in:
 
-- use Apple Endpoint Security
-- collect process execution events
-- collect file mutation events
-- correlate process identity and parent process tree
-- forward normalized events to Java
-- keep policy, detection, storage, UI, and explanation in Java
+```text
+osmind-java/agent-macos/
+```
 
-The native collector should be small and auditable.
+Implemented subscriptions:
+
+- `ES_EVENT_TYPE_NOTIFY_EXEC`
+- `ES_EVENT_TYPE_NOTIFY_OPEN`
+- `ES_EVENT_TYPE_NOTIFY_WRITE`
+- `ES_EVENT_TYPE_NOTIFY_UNLINK`
+- `ES_EVENT_TYPE_NOTIFY_SETMODE`
+
+The collector writes OSMind JSONL events to the same storage used by Java:
+
+- `OSMIND_STORE`
+- `OSMIND_HOME/events.jsonl`
+- `~/.osmind/events.jsonl`
+
+Current native gap: Endpoint Security does not provide general outbound TCP connect events, so network telemetry still needs a supplemental macOS source.
 
 ## Packaging
 
@@ -331,7 +357,8 @@ OSMind is an experimental local security tool. It should not be used as the only
 Current limitations:
 
 - demo events are synthetic
-- live macOS telemetry is not implemented yet
+- Endpoint Security requires Apple-approved entitlement and signing
+- native network telemetry is not implemented yet
 - alerts are heuristic
 - recommendations should be reviewed by a human
 

@@ -14,7 +14,7 @@ sh scripts/osmind-cli ask "Почему у меня резко вырос сет
 OSMind is an early macOS-only prototype.
 
 - Java is the brain: event schema, storage, behavior engine, anomaly detector, explanation layer, API, CLI, and GUI.
-- The native layer target is macOS Endpoint Security. The native collector is not implemented yet.
+- The native layer target is macOS Endpoint Security. Collector source code is included under `agent-macos`.
 - Demo data is synthetic and useful for testing the Java brain and UI.
 - The current AI mode is local heuristic analysis plus an explanation module. A local LLM backend is planned, but no cloud AI calls are made.
 - Analysis runs in two modes:
@@ -90,6 +90,20 @@ Run the smoke test:
 ```bash
 sh scripts/smoke-test
 ```
+
+Build the native macOS collector:
+
+```bash
+sh scripts/build-macos-collector
+```
+
+Run the native macOS collector:
+
+```bash
+sh scripts/run-macos-collector
+```
+
+The collector requires a signed binary with Apple's `com.apple.developer.endpoint-security.client` entitlement. Without that entitlement, macOS rejects the Endpoint Security client at runtime.
 
 ## macOS Shortcut
 
@@ -179,8 +193,8 @@ The output is created under `dist/`.
 
 ## Roadmap
 
-1. Implement the macOS Endpoint Security native collector.
-2. Add a Java ingestion server over a local Unix socket.
-3. Replace synthetic demo events with live macOS events.
+1. Add signing and packaging flow for the macOS Endpoint Security collector.
+2. Add native network telemetry to complement Endpoint Security.
+3. Add a Java ingestion server over a local Unix socket.
 4. Add a local LLM backend for richer explanations.
 5. Package and sign a macOS `.app` for testers.
